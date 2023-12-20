@@ -2,7 +2,12 @@ package selfupdate
 
 import (
 	"context"
+	"errors"
 	"io"
+)
+
+var (
+	ErrNoNewVersion = errors.New("no new version")
 )
 
 type Signer interface {
@@ -10,7 +15,7 @@ type Signer interface {
 }
 
 type Uploader interface {
-	Upload(ctx context.Context, version string, r io.Reader) error
+	Upload(ctx context.Context, filename string, version string, r io.Reader) error
 }
 
 type Checker interface {
@@ -18,7 +23,7 @@ type Checker interface {
 }
 
 type Downloader interface {
-	Download(ctx context.Context, version string) io.Reader
+	Download(ctx context.Context, version string) io.ReadCloser
 }
 
 type Verifier interface {
