@@ -23,7 +23,7 @@ type Checker interface {
 }
 
 type Downloader interface {
-	Download(ctx context.Context, version string) io.ReadCloser
+	Download(ctx context.Context, name string, version string) io.ReadCloser
 }
 
 type Verifier interface {

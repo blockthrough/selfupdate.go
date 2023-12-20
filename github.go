@@ -1,7 +1,6 @@
 package selfupdate
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -14,6 +13,7 @@ import (
 
 var (
 	ErrGithubReleaseNotFound = errors.New("github release not found")
+	ErrGithubRedirect        = errors.New("github redirect")
 )
 
 type Github struct {
@@ -34,15 +34,7 @@ func (g *Github) Upload(ctx context.Context, filename string, version string, r 
 
 	url := fmt.Sprintf("repos/%s/%s/releases/%d/assets?name=%s", g.owner, g.name, releaseId, filename)
 
-	// TODO: currently there is no easy way to get the size of the reader
-	// other than reading it all the way through and then save it to a buffer
-	// maybe we can change the interface to accept a size parameter?
-	var buffer bytes.Buffer
-	if _, err := io.Copy(&buffer, r); err != nil {
-		return err
-	}
-
-	req, err := g.client.NewUploadRequest(url, r, 0, "")
+	req, err := g.client.NewUploadRequest(url, compressReader(r), 0, "")
 	if err != nil {
 		return err
 	}
@@ -68,7 +60,7 @@ func (g *Github) Check(ctx context.Context, currentVersion string) (newVersion s
 	return releases[0].GetTagName(), releases[0].GetBody(), nil
 }
 
-func (g *Github) Download(ctx context.Context, version string) io.ReadCloser {
+func (g *Github) Download(ctx context.Context, name string, version string) io.ReadCloser {
 	releases, _, err := g.client.Repositories.ListReleases(ctx, g.owner, g.name, nil)
 	if err != nil {
 		return newErrorReader(err)
@@ -87,16 +79,30 @@ func (g *Github) Download(ctx context.Context, version string) io.ReadCloser {
 		return newErrorReader(ErrGithubReleaseNotFound)
 	}
 
-	rc, redirectURL, err := g.client.Repositories.DownloadReleaseAsset(ctx, g.owner, g.name, release.Assets[0].GetID(), nil)
+	var githubAsset *github.ReleaseAsset
+	for _, asset := range release.Assets {
+		if asset.GetName() == name {
+			githubAsset = asset
+			break
+		}
+	}
+
+	if githubAsset == nil {
+		return newErrorReader(ErrGithubReleaseNotFound)
+	}
+
+	rc, redirectURL, err := g.client.Repositories.DownloadReleaseAsset(ctx, g.owner, g.name, githubAsset.GetID(), nil)
 	if err != nil {
 		return newErrorReader(err)
 	}
 
 	// TODO: handle redirect
 	// for now we just ignore it
-	_ = redirectURL
+	if redirectURL != "" {
+		return newErrorReader(ErrGithubRedirect)
+	}
 
-	return rc
+	return decompressReader(rc)
 }
 
 func (g *Github) GetReleaseID(ctx context.Context, version string) (int64, error) {
