@@ -9,12 +9,13 @@ import (
 
 // SELF_UPDATE_GH_TOKEN=
 // SELF_UPDATE_PRIVATE_KEY=
+// SELF_UPDATE_PUBLIC_KEY=
 
-// SELF_UPDATE_PUBLIC_KEY_FILE_PATH=
-
-// selfupdate generate key
-// selfupdate github release --owner blockthrough --repo up-marble --name btctl --version v1.0.0 --sign < ./bin/btctl
-// selfupdate github download --owner blockthrough --repo up-marble --name btctl --version v1.0.0 --verify > ./bin/btctl
+// selfupdate crypto generate-keys
+// selfupdate crypto sign < ./bin/btctl > ./bin/btctl.sig
+// selfupdate crypto verify < ./bin/btctl.sig > ./bin/btctl
+// selfupdate github release --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --sign < ./bin/btctl
+// selfupdate github download --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --verify > ./bin/btctl
 
 func main() {
 	err := commands.Execute()

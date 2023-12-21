@@ -12,7 +12,7 @@ func Execute() error {
 		Usage:   "a cli for self-update of golang apps",
 		Version: "1.0.0",
 		Commands: []*cli.Command{
-			generateCmd(),
+			cryptoCmd(),
 			githubCmd(),
 		},
 	}
