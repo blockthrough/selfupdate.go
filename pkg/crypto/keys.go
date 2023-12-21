@@ -2,25 +2,41 @@ package crypto
 
 import (
 	"crypto/rand"
+	"encoding/hex"
+	"errors"
 
 	"golang.org/x/crypto/nacl/sign"
 )
 
-const (
-	Overhead = sign.Overhead
+var (
+	ErrInvalidKey = errors.New("invalid key")
 )
 
-type PrivateKey [64]byte
+const (
+	Overhead       = sign.Overhead
+	PublicKeySize  = 32
+	PrivateKeySize = 64
+)
+
+type PrivateKey [PrivateKeySize]byte
 
 func (p PrivateKey) Sign(message []byte) []byte {
-	return sign.Sign(nil, message, (*[64]byte)(&p))
+	return sign.Sign(nil, message, (*[PrivateKeySize]byte)(&p))
 }
 
-type PublicKey [32]byte
+func (p PrivateKey) String() string {
+	return binary2String(p[:])
+}
+
+type PublicKey [PublicKeySize]byte
 
 func (p PublicKey) Verify(signedMessage []byte) bool {
-	_, ok := sign.Open(nil, signedMessage, (*[32]byte)(&p))
+	_, ok := sign.Open(nil, signedMessage, (*[PublicKeySize]byte)(&p))
 	return ok
+}
+
+func (p PublicKey) String() string {
+	return binary2String(p[:])
 }
 
 func GenerateKeys() (publicKey PublicKey, privateKey PrivateKey, err error) {
@@ -30,4 +46,45 @@ func GenerateKeys() (publicKey PublicKey, privateKey PrivateKey, err error) {
 	}
 
 	return *publicKeyPtr, *privateKeyPtr, nil
+}
+
+func ParsePrivateKey(key string) (priv PrivateKey, err error) {
+	bytes, err := string2Binary(key)
+	if err != nil {
+		return
+	}
+
+	if len(bytes) != PrivateKeySize {
+		return priv, ErrInvalidKey
+	}
+
+	copy(priv[:], bytes)
+	return
+}
+
+func ParsePublicKey(key string) (pub PublicKey, err error) {
+	bytes, err := string2Binary(key)
+	if err != nil {
+		return
+	}
+
+	if len(bytes) != PublicKeySize {
+		return pub, ErrInvalidKey
+	}
+
+	copy(pub[:], bytes)
+	return
+}
+
+func string2Binary(str string) ([]byte, error) {
+	bytes, err := hex.DecodeString(str)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
+}
+
+func binary2String(b []byte) string {
+	return hex.EncodeToString(b)
 }
