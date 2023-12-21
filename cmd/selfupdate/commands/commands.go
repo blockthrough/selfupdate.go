@@ -9,10 +9,11 @@ import (
 func Execute() error {
 	app := cli.App{
 		Name:    "selfupdate",
-		Usage:   "golang selfupdate cli",
+		Usage:   "a cli for self-update of golang apps",
 		Version: "1.0.0",
 		Commands: []*cli.Command{
 			generateCmd(),
+			githubCmd(),
 		},
 	}
 
