@@ -3,7 +3,6 @@ package selfupdate
 import (
 	"bytes"
 	"context"
-
 	"io"
 
 	"selfupdate.blockthrough.com/pkg/crypto"
