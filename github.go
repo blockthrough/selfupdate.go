@@ -9,6 +9,8 @@ import (
 
 	"github.com/google/go-github/v57/github"
 	"golang.org/x/oauth2"
+
+	"selfupdate.blockthrough.com/pkg/compress"
 )
 
 var (
@@ -34,7 +36,7 @@ func (g *Github) Upload(ctx context.Context, filename string, version string, r 
 
 	url := fmt.Sprintf("repos/%s/%s/releases/%d/assets?name=%s", g.owner, g.name, releaseId, filename)
 
-	req, err := g.client.NewUploadRequest(url, compressReader(r), 0, "")
+	req, err := g.client.NewUploadRequest(url, compress.Zip(r), 0, "")
 	if err != nil {
 		return err
 	}
@@ -102,7 +104,7 @@ func (g *Github) Download(ctx context.Context, name string, version string) io.R
 		return newErrorReader(ErrGithubRedirect)
 	}
 
-	return decompressReader(rc)
+	return compress.Unzip(rc)
 }
 
 func (g *Github) GetReleaseID(ctx context.Context, version string) (int64, error) {
