@@ -38,4 +38,4 @@ jobs:
 
       - name: Release
         run: |
-          ./selfupdate-linux github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}.sign --version ${{ github.ref }} --sign < ./selfupdate
+          ./selfupdate-linux github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}
