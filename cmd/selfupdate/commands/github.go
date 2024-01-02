@@ -100,8 +100,8 @@ func githubDownloadCmd() *cli.Command {
 	var verify bool
 
 	return &cli.Command{
-		Name:  "release",
-		Usage: "release a new version",
+		Name:  "download",
+		Usage: "download a new version",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "owner",
