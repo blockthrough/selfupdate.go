@@ -1,4 +1,4 @@
-name: Build and Release
+name: Selfupdate.go
 on:
   push:
     tags:
@@ -14,7 +14,6 @@ jobs:
 
     strategy:
       matrix:
-        go-version: [1.21]
         os: [linux, windows, darwin]
 
     steps:
@@ -33,9 +32,13 @@ jobs:
         run: go test -v ./...
 
       - name: Build
+        matrix:
+          os: ${{ matrix.os }}
         run: |
           GOOS=${{ matrix.os }} go build -o ./selfupdate-${{ matrix.os }} ./cmd/selfupdate/main.go
 
-      - name: Release
+      - name: Upload-Release
+        matrix:
+          os: ${{ matrix.os }}
         run: |
           ./selfupdate-linux github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}
