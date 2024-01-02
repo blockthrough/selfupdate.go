@@ -1,0 +1,32 @@
+name: API
+on:
+  push:
+    tags:
+      - "v*"
+jobs:
+  build:
+    env:
+      SELF_UPDATE_PRIVATE_KEY: ${{ secrets.SELF_UPDATE_PRIVATE_KEY }}
+      SELF_UPDATE_PUBLIC_KEY: ${{ secrets.SELF_UPDATE_PUBLIC_KEY }}
+      SELF_UPDATE_GH_TOKEN: ${{ secrets.SELF_UPDATE_GH_TOKEN }}
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Go 1.21
+        uses: actions/setup-go@v3
+        with:
+          go-version: ^1.21
+
+      - name: Checking out ...
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: go mod tidy
+
+      - name: Unit Tests
+        run: go test -v ./...
+
+      - name: Build and Release
+        run: |
+          go build -o ./selfupdate ./cmd/selfupdate/main.go
+          ./selfupdate github release --owner blockthrough --repo selfupdate.go --name selfupdate.sign --version ${{ github.ref }} --sign < ./selfupdate
