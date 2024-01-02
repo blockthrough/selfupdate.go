@@ -1,4 +1,4 @@
-name: Selfupdate.go
+name: Build and Release
 on:
   push:
     tags:
@@ -10,6 +10,11 @@ jobs:
       SELF_UPDATE_PUBLIC_KEY: ${{ secrets.SELF_UPDATE_PUBLIC_KEY }}
       SELF_UPDATE_GH_TOKEN: ${{ secrets.SELF_UPDATE_GH_TOKEN }}
 
+    strategy:
+      matrix:
+        os: [linux, windows, darwin]
+        arch: [amd64, arm64]
+
     runs-on: ubuntu-latest
 
     steps:
@@ -18,29 +23,19 @@ jobs:
         with:
           go-version: ^1.21
 
-      - name: Checking out ...
+      - name: Setup Repo
         uses: actions/checkout@v3
 
       - name: Install dependencies
         run: go mod tidy
 
-      - name: Unit Tests
+      - name: Run Unit Tests
         run: go test -v ./...
 
       - name: Build
         run: |
-          GOOS=linux GOARCH=amd64 go build -o ./selfupdate-linux-amd64 ./cmd/selfupdate/main.go
-          GOOS=linux GOARCH=arm64 go build -o ./selfupdate-linux-arm64 ./cmd/selfupdate/main.go
-          GOOS=windows GOARCH=amd64 go build -o ./selfupdate-windows-amd64 ./cmd/selfupdate/main.go
-          GOOS=windows GOARCH=arm64 go build -o ./selfupdate-windows-arm64 ./cmd/selfupdate/main.go
-          GOOS=darwin GOARCH=amd64 go build -o ./selfupdate-darwin-amd64 ./cmd/selfupdate/main.go
-          GOOS=darwin GOARCH=arm64 go build -o ./selfupdate-darwin-arm64 ./cmd/selfupdate/main.go
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }} ./cmd/selfupdate/main.go
 
-      - name: Upload-Release
+      - name: Release
         run: |
-          ./selfupdate-linux-amd64 github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}.sign --version ${{ github.ref }} --sign < ./selfupdate-linux-amd64
-          ./selfupdate-linux-amd64 github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}.sign --version ${{ github.ref }} --sign < ./selfupdate-linux-arm64
-          ./selfupdate-linux-amd64 github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}.sign --version ${{ github.ref }} --sign < ./selfupdate-windows-amd64
-          ./selfupdate-linux-amd64 github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}.sign --version ${{ github.ref }} --sign < ./selfupdate-windows-arm64
-          ./selfupdate-linux-amd64 github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}.sign --version ${{ github.ref }} --sign < ./selfupdate-darwin-amd64
-          ./selfupdate-linux-amd64 github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}.sign --version ${{ github.ref }} --sign < ./selfupdate-darwin-arm64
+          ./selfupdate-linux-amd64 github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
