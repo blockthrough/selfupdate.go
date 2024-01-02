@@ -1,4 +1,4 @@
-name: API
+name: Build and Release
 on:
   push:
     tags:
