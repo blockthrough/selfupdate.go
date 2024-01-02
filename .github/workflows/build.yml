@@ -32,10 +32,13 @@ jobs:
       - name: Run Unit Tests
         run: go test -v ./...
 
-      - name: Build
+      - name: Build cli
+        run: go build -o ./selfupdate ./cmd/selfupdate/main.go
+
+      - name: Build cli for all OS
         run: |
           GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }} ./cmd/selfupdate/main.go
 
       - name: Release
         run: |
-          ./selfupdate-linux-amd64 github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
+          ./selfupdate github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
