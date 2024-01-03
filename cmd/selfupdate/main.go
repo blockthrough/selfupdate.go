@@ -32,7 +32,7 @@ func main() {
 
 	err := commands.Execute(Version)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("Failed to execute: ", err)
 		os.Exit(1)
 	}
 }
