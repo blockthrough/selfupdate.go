@@ -30,30 +30,23 @@ jobs:
       - name: Setup Repo
         uses: actions/checkout@v3
 
-      # - name: Install dependencies
-      #   run: go mod tidy
+      - name: Install dependencies
+        run: go mod tidy
 
-      # - name: Run Unit Tests
-      #   run: go test -v ./...
+      - name: Run Unit Tests
+        run: go test -v ./...
 
-      # - name: Build cli
-      #   run: go build -o ./selfupdate ./cmd/selfupdate/main.go
+      - name: Build cli
+        run: go build -o ./selfupdate ./cmd/selfupdate/main.go
 
-      - name: test env
+      - name: Create a Release
         run: |
-          echo "SELF_UPDATE_PRIVATE_KEY: $SELF_UPDATE_PRIVATE_KEY"
-          echo "SELF_ECHO: $SELF_ECHO"
-          length=$(echo -n "$SELF_UPDATE_PRIVATE_KEY" | wc -c)
-          echo "Length of SELF_UPDATE_PRIVATE_KEY: $length"
+          ./selfupdate github release --owner blockthrough --repo selfupdate.go --version ${{ github.ref }} --title ${{ github.ref }}
 
-      # - name: Create a Release
-      #   run: |
-      #     ./selfupdate github release --owner blockthrough --repo selfupdate.go --version ${{ github.ref }} --title ${{ github.ref }}
+      - name: Build cli for all OS
+        run: |
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }} ./cmd/selfupdate/main.go
 
-      # - name: Build cli for all OS
-      #   run: |
-      #     GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }} ./cmd/selfupdate/main.go
-
-      # - name: Release
-      #   run: |
-      #     ./selfupdate github upload --owner blockthrough --repo selfupdate.go --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
+      - name: Release
+        run: |
+          ./selfupdate github upload --owner blockthrough --repo selfupdate.go --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
