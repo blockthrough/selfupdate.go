@@ -5,17 +5,17 @@ on:
       - "v*"
 jobs:
   build:
-    env:
-      SELF_UPDATE_PRIVATE_KEY: ${{ secrets.SELF_UPDATE_PRIVATE_KEY }}
-      SELF_UPDATE_PUBLIC_KEY: ${{ secrets.SELF_UPDATE_PUBLIC_KEY }}
-      SELF_UPDATE_GH_TOKEN: ${{ secrets.SELF_UPDATE_GH_TOKEN }}
-
     strategy:
       matrix:
         os: [linux, windows, darwin]
         arch: [amd64, arm64]
 
     runs-on: ubuntu-latest
+
+    env:
+      SELF_UPDATE_PRIVATE_KEY: "${{ secrets.SELF_UPDATE_PRIVATE_KEY }}"
+      SELF_UPDATE_PUBLIC_KEY: "${{ secrets.SELF_UPDATE_PUBLIC_KEY }}"
+      SELF_UPDATE_GH_TOKEN: "${{ secrets.SELF_UPDATE_GH_TOKEN }}"
 
     steps:
       - name: Setup Go 1.21
