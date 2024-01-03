@@ -35,10 +35,14 @@ jobs:
       - name: Build cli
         run: go build -o ./selfupdate ./cmd/selfupdate/main.go
 
+      - name: Create a Release
+        run: |
+          ./selfupdate github release --owner blockthrough --repo selfupdate.go --version ${{ github.ref }} --title ${{ github.ref }}
+
       - name: Build cli for all OS
         run: |
           GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }} ./cmd/selfupdate/main.go
 
       - name: Release
         run: |
-          ./selfupdate github release --owner blockthrough --repo selfupdate.go --name selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
+          ./selfupdate github upload --owner blockthrough --repo selfupdate.go --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
