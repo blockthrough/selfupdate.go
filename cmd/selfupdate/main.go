@@ -2,16 +2,11 @@ package main
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"log"
 	"os"
-	"runtime"
 
 	"selfupdate.blockthrough.com"
 	"selfupdate.blockthrough.com/cmd/selfupdate/commands"
-	"selfupdate.blockthrough.com/pkg/crypto"
-	"selfupdate.blockthrough.com/pkg/env"
 )
 
 // SELF_UPDATE_GH_TOKEN=
@@ -27,72 +22,18 @@ import (
 var Version string = ""
 
 func main() {
-	updateAndRun(context.Background())
+	selfupdate.Exec(
+		context.Background(), // Context
+		"blockthrough",       // Owner Name
+		"selfupdate.go",      // Repo Name
+		Version,              // Current Version
+		"selfupdate",         // Executable Name
+		".new",               // Executable Extension for downloading new version
+	)
 
 	err := commands.Execute(Version)
 	if err != nil {
 		log.Fatal("Failed to execute: ", err)
 		os.Exit(1)
 	}
-}
-
-func updateAndRun(ctx context.Context) {
-	if Version == "" {
-		return
-	}
-
-	ghToken, ok := env.Lookup("SELF_UPDATE_GH_TOKEN")
-	if !ok {
-		fmt.Fprintln(os.Stderr, "SELF_UPDATE_GH_TOKEN env variable is not set")
-		return
-	}
-
-	publicKeyEnv, ok := env.Lookup("SELF_UPDATE_PUBLIC_KEY")
-	if !ok {
-		fmt.Fprintln(os.Stderr, "SELF_UPDATE_PUBLIC_KEY env variable is not set")
-		return
-	}
-
-	publicKey, err := crypto.ParsePublicKey(publicKeyEnv)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, fmt.Sprintf("failed to parse public key: %s", err.Error()))
-		return
-	}
-
-	ghClient := selfupdate.NewGithub(ghToken, "blockthrough", "selfupdate.go")
-
-	newVersion, _, err := ghClient.Check(ctx, getSignFilename(), Version)
-	if errors.Is(err, selfupdate.ErrNoNewVersion) {
-		return
-	} else if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return
-	}
-
-	fmt.Fprintf(os.Stderr, "downloading new version (%s)...", newVersion)
-
-	rc := ghClient.Download(ctx, getSignFilename(), newVersion)
-	defer rc.Close()
-
-	r := selfupdate.NewHashVerifier(publicKey).Verify(ctx, rc)
-
-	err = selfupdate.NewPatcher().Patch(context.Background(), r)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, fmt.Sprintf("failed to patch: %s\n", err.Error()))
-		return
-	}
-
-	fmt.Fprint(os.Stderr, "done\n")
-
-	fmt.Fprintln(os.Stderr, "running new version...")
-
-	err = selfupdate.NewAutoCliRunner().Run(ctx)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
-		os.Exit(1)
-	}
-}
-
-func getSignFilename() string {
-	return fmt.Sprintf("selfupdate-%s-%s.sign", runtime.GOOS, runtime.GOARCH)
 }

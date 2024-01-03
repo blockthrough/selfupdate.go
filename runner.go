@@ -4,7 +4,8 @@ import (
 	"context"
 	"os"
 	"os/exec"
-	"path/filepath"
+
+	"selfupdate.blockthrough.com/pkg/executil"
 )
 
 // NewCliRunner rerun the an executable with the same arguments.
@@ -24,15 +25,9 @@ func NewCliRunner(path string, args ...string) Runner {
 	})
 }
 
-func NewAutoCliRunner() Runner {
+func NewAutoCliRunner(ext string) Runner {
 	return RunnerFunc(func(ctx context.Context) error {
-		exePath, err := os.Executable()
-		if err != nil {
-			return err
-		}
-
-		// Clean up the path to get the absolute path without symbolic links
-		target, err := filepath.EvalSymlinks(exePath)
+		target, err := executil.Copy(ext)
 		if err != nil {
 			return err
 		}

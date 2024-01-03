@@ -5,22 +5,19 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"runtime"
+
+	"selfupdate.blockthrough.com/pkg/executil"
 )
 
-func NewPatcher() Patcher {
+func NewPatcher(ext string) Patcher {
 	return PatcherFunc(func(ctx context.Context, patch io.Reader) error {
-		exePath, err := os.Executable()
+		execPath, err := executil.CurrentPath()
 		if err != nil {
 			return err
 		}
 
-		// Clean up the path to get the absolute path without symbolic links
-		target, err := filepath.EvalSymlinks(exePath)
-		if err != nil {
-			return err
-		}
+		target := execPath + ext
 
 		out, err := os.Create(target)
 		if err != nil {
