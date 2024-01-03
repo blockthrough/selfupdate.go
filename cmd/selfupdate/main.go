@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"runtime"
 
 	"selfupdate.blockthrough.com"
 	"selfupdate.blockthrough.com/cmd/selfupdate/commands"
@@ -24,8 +25,6 @@ import (
 // selfupdate github download --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --verify > ./bin/btctl
 
 var Version string = ""
-var OS string = ""
-var Arch string = ""
 
 func main() {
 	updateAndRun(context.Background())
@@ -95,5 +94,5 @@ func updateAndRun(ctx context.Context) {
 }
 
 func getSignFilename() string {
-	return fmt.Sprintf("selfupdate-%s-%s.sign", OS, Arch)
+	return fmt.Sprintf("selfupdate-%s-%s.sign", runtime.GOOS, runtime.GOARCH)
 }

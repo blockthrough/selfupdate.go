@@ -4,7 +4,9 @@ import (
 	"context"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 )
 
 func NewPatcher() Patcher {
@@ -31,6 +33,13 @@ func NewPatcher() Patcher {
 			return err
 		}
 
-		return nil
+		// On Darwin, use the 'chmod' command to make the binary executable
+		if runtime.GOOS == "darwin" {
+			cmd := exec.Command("chmod", "+x", target)
+			return cmd.Run()
+		}
+
+		// For other platforms, use the 'os.Chmod' function
+		return os.Chmod(target, 0755)
 	})
 }
