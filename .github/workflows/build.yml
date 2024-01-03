@@ -41,7 +41,7 @@ jobs:
 
       - name: Create a Release
         run: |
-          ./selfupdate github release --owner blockthrough --repo selfupdate.go --version ${{ github.ref }} --title ${{ github.ref }}
+          ./selfupdate github release --owner blockthrough --repo selfupdate.go --version ${{ github.ref_name }} --title ${{ github.ref_name }}
 
       - name: Build cli for all OS
         run: |
@@ -49,4 +49,4 @@ jobs:
 
       - name: Release
         run: |
-          ./selfupdate github upload --owner blockthrough --repo selfupdate.go --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
+          ./selfupdate github upload --owner blockthrough --repo selfupdate.go --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign --version ${{ github.ref_name }} --sign < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
