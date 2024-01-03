@@ -41,6 +41,8 @@ jobs:
         run: |
           echo "SELF_UPDATE_PRIVATE_KEY: $SELF_UPDATE_PRIVATE_KEY"
           echo "SELF_ECHO: $SELF_ECHO"
+          length=$(echo -n "$SELF_UPDATE_PRIVATE_KEY" | wc -c)
+          echo "Length of SELF_UPDATE_PRIVATE_KEY: $length"
 
       # - name: Create a Release
       #   run: |
