@@ -8,6 +8,7 @@ import (
 	"selfupdate.blockthrough.com"
 	"selfupdate.blockthrough.com/pkg/cli"
 	"selfupdate.blockthrough.com/pkg/crypto"
+	"selfupdate.blockthrough.com/pkg/env"
 )
 
 func cryptoCmd() *cli.Command {
@@ -90,8 +91,8 @@ func cryptoVerify() *cli.Command {
 }
 
 func getPublicKey() (publicKey crypto.PublicKey, err error) {
-	value, ok := os.LookupEnv("SELF_UPDATE_PUBLIC_KEY")
-	if !ok || value == "" {
+	value, ok := env.Lookup("SELF_UPDATE_PUBLIC_KEY")
+	if !ok {
 		err = cli.Exit("SELF_UPDATE_PUBLIC_KEY env variable is not set", 1)
 		return
 	}
@@ -101,8 +102,8 @@ func getPublicKey() (publicKey crypto.PublicKey, err error) {
 }
 
 func getPrivateKey() (privateKey crypto.PrivateKey, err error) {
-	value, ok := os.LookupEnv("SELF_UPDATE_PRIVATE_KEY")
-	if !ok || value == "" {
+	value, ok := env.Lookup("SELF_UPDATE_PRIVATE_KEY")
+	if !ok {
 		err = cli.Exit("SELF_UPDATE_PRIVATE_KEY env variable is not set", 1)
 		return
 	}

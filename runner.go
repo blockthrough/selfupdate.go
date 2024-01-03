@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
 )
 
 // NewCliRunner rerun the an executable with the same arguments.
@@ -15,5 +16,22 @@ func NewCliRunner(path string, args ...string) Runner {
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
 		return cmd.Start()
+	})
+}
+
+func NewAutoCliRunner() Runner {
+	return RunnerFunc(func(ctx context.Context) error {
+		exePath, err := os.Executable()
+		if err != nil {
+			return err
+		}
+
+		// Clean up the path to get the absolute path without symbolic links
+		target, err := filepath.EvalSymlinks(exePath)
+		if err != nil {
+			return err
+		}
+
+		return NewCliRunner(target, os.Args[1:]...).Run(ctx)
 	})
 }

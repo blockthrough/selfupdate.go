@@ -63,3 +63,11 @@ var _ Runner = RunnerFunc(nil)
 func (f RunnerFunc) Run(ctx context.Context) error {
 	return f(ctx)
 }
+
+type PatcherFunc func(ctx context.Context, patch io.Reader) error
+
+var _ Patcher = PatcherFunc(nil)
+
+func (f PatcherFunc) Patch(ctx context.Context, patch io.Reader) error {
+	return f(ctx, patch)
+}

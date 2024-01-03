@@ -6,11 +6,11 @@ import (
 	"selfupdate.blockthrough.com/pkg/cli"
 )
 
-func Execute() error {
+func Execute(version string) error {
 	app := cli.App{
 		Name:    "selfupdate",
 		Usage:   "a cli for self-update of golang apps",
-		Version: "1.0.0",
+		Version: version,
 		Commands: []*cli.Command{
 			cryptoCmd(),
 			githubCmd(),

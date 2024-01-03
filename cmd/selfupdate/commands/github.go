@@ -8,6 +8,7 @@ import (
 
 	"selfupdate.blockthrough.com"
 	"selfupdate.blockthrough.com/pkg/cli"
+	"selfupdate.blockthrough.com/pkg/env"
 )
 
 func githubCmd() *cli.Command {
@@ -304,8 +305,8 @@ func githubDownloadCmd() *cli.Command {
 }
 
 func getGithubClient(owner string, repo string) (*selfupdate.Github, error) {
-	ghToken, ok := os.LookupEnv("SELF_UPDATE_GH_TOKEN")
-	if !ok || ghToken == "" {
+	ghToken, ok := env.Lookup("SELF_UPDATE_GH_TOKEN")
+	if !ok {
 		return nil, cli.Exit("SELF_UPDATE_GH_TOKEN env variable is not set", 1)
 	}
 
