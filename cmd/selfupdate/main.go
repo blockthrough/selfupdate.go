@@ -23,7 +23,7 @@ import (
 // selfupdate github release --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --sign < ./bin/btctl
 // selfupdate github download --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --verify > ./bin/btctl
 
-var Version string = "development"
+var Version string = ""
 var OS string = ""
 var Arch string = ""
 
@@ -38,7 +38,7 @@ func main() {
 }
 
 func updateAndRun(ctx context.Context) {
-	if Version == "development" {
+	if Version == "" {
 		return
 	}
 
