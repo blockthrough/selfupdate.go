@@ -15,7 +15,12 @@ func NewCliRunner(path string, args ...string) Runner {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin
-		return cmd.Start()
+		err := cmd.Start()
+		if err != nil {
+			return err
+		}
+
+		return cmd.Wait()
 	})
 }
 
