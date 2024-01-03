@@ -91,7 +91,7 @@ func cryptoVerify() *cli.Command {
 
 func getPublicKey() (publicKey crypto.PublicKey, err error) {
 	value, ok := os.LookupEnv("SELF_UPDATE_PUBLIC_KEY")
-	if !ok {
+	if !ok || value == "" {
 		err = cli.Exit("SELF_UPDATE_PUBLIC_KEY env variable is not set", 1)
 		return
 	}
@@ -102,7 +102,7 @@ func getPublicKey() (publicKey crypto.PublicKey, err error) {
 
 func getPrivateKey() (privateKey crypto.PrivateKey, err error) {
 	value, ok := os.LookupEnv("SELF_UPDATE_PRIVATE_KEY")
-	if !ok {
+	if !ok || value == "" {
 		err = cli.Exit("SELF_UPDATE_PRIVATE_KEY env variable is not set", 1)
 		return
 	}
