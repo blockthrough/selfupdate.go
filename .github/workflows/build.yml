@@ -14,11 +14,6 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    env:
-      SELF_UPDATE_PRIVATE_KEY: "${{ secrets.SELF_UPDATE_PRIVATE_KEY }}"
-      SELF_UPDATE_PUBLIC_KEY: "${{ secrets.SELF_UPDATE_PUBLIC_KEY }}"
-      SELF_UPDATE_GH_TOKEN: "${{ secrets.SELF_UPDATE_GH_TOKEN }}"
-
     steps:
       - name: Setup Go 1.21
         uses: actions/setup-go@v3
@@ -38,12 +33,16 @@ jobs:
         run: go build -o ./selfupdate ./cmd/selfupdate/main.go
 
       - name: test env
+        env:
+          SELF_UPDATE_PRIVATE_KEY: ${{ secrets.SELF_UPDATE_PRIVATE_KEY }}
+          SELF_UPDATE_GH_TOKEN: ${{ secrets.SELF_UPDATE_GH_TOKEN }}
         run: |
           echo "$SELF_UPDATE_PRIVATE_KEY"
-          echo "$SELF_UPDATE_PUBLIC_KEY"
           echo "$SELF_UPDATE_GH_TOKEN"
 
       - name: Create a Release
+        env:
+          SELF_UPDATE_GH_TOKEN: ${{ secrets.SELF_UPDATE_GH_TOKEN }}
         run: |
           ./selfupdate github release --owner blockthrough --repo selfupdate.go --version ${{ github.ref }} --title ${{ github.ref }}
 
@@ -52,5 +51,8 @@ jobs:
           GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }} ./cmd/selfupdate/main.go
 
       - name: Release
+        env:
+          SELF_UPDATE_PRIVATE_KEY: ${{ secrets.SELF_UPDATE_PRIVATE_KEY }}
+          SELF_UPDATE_GH_TOKEN: ${{ secrets.SELF_UPDATE_GH_TOKEN }}
         run: |
           ./selfupdate github upload --owner blockthrough --repo selfupdate.go --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign --version ${{ github.ref }} --sign < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
