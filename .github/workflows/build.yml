@@ -45,7 +45,7 @@ jobs:
 
       - name: Build cli for all OS
         run: |
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build "-X main.Version=${{ github.ref_name }} -X main.OS=${{ matrix.os }} -X main.Arch=${{ matrix.arch }}" -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }} ./cmd/selfupdate/main.go
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -ldflags "-X main.Version=${{ github.ref_name }} -X main.OS=${{ matrix.os }} -X main.Arch=${{ matrix.arch }}" -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }} ./cmd/selfupdate/main.go
 
       - name: Release
         run: |
