@@ -19,7 +19,7 @@ type Uploader interface {
 }
 
 type Checker interface {
-	Check(ctx context.Context, currentVersion string) (newVersion string, desc string, err error)
+	Check(ctx context.Context, filename string, currentVersion string) (newVersion string, desc string, err error)
 }
 
 type Downloader interface {
