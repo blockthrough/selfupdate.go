@@ -19,7 +19,7 @@ import (
 // selfupdate github release --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --sign < ./bin/btctl
 // selfupdate github download --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --verify > ./bin/btctl
 
-var Version string = ""
+var Version string = "v0.0.0"
 
 func main() {
 	selfupdate.Exec(

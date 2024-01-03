@@ -32,6 +32,10 @@ func NewAutoCliRunner(ext string) Runner {
 			return err
 		}
 
+		if target == "" {
+			return nil
+		}
+
 		return NewCliRunner(target, os.Args[1:]...).Run(ctx)
 	})
 }

@@ -17,13 +17,15 @@ func CurrentPath() (string, error) {
 	return filepath.EvalSymlinks(exePath)
 }
 
+// Copy the content of current executable to a new file.
+// file.<ext> -> file
 func Copy(ext string) (newPath string, err error) {
 	src, err := CurrentPath()
 	if err != nil {
 		return
 	}
 
-	if strings.HasSuffix(src, ext) {
+	if !strings.HasSuffix(src, ext) {
 		return "", nil
 	}
 
@@ -45,6 +47,10 @@ func Copy(ext string) (newPath string, err error) {
 	return
 }
 
+// Cleanup tries to remove the file that is not currently running, but has the given extension.
+// Need to run this at the begining of the program to make sure the old file is removed
+// Note: this function returns nil if the currently running file has the given extension
+// Basically it only does the following: remove (current file).<ext> if it exists
 func Cleanup(ext string) error {
 	src, err := CurrentPath()
 	if err != nil {
