@@ -15,8 +15,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SELF_UPDATE_PRIVATE_KEY: ${{ secrets.SELF_UPDATE_PRIVATE_KEY }}
-      SELF_UPDATE_GH_TOKEN: ${{ secrets.SELF_UPDATE_GH_TOKEN }}
+      SELF_UPDATE_PRIVATE_KEY: ${{ secrets.actions.SELF_UPDATE_PRIVATE_KEY }}
+      SELF_UPDATE_GH_TOKEN: ${{ secrets.actions.SELF_UPDATE_GH_TOKEN }}
       SELF_ECHO: "hello world"
 
     steps:
