@@ -23,7 +23,7 @@ func Copy(ext string) (newPath string, err error) {
 		return
 	}
 
-	if !strings.HasSuffix(src, ext) {
+	if strings.HasSuffix(src, ext) {
 		return "", nil
 	}
 
