@@ -37,8 +37,10 @@ jobs:
           SELF_UPDATE_PRIVATE_KEY: ${{ secrets.SELF_UPDATE_PRIVATE_KEY }}
           SELF_UPDATE_GH_TOKEN: ${{ secrets.SELF_UPDATE_GH_TOKEN }}
         run: |
-          echo "$SELF_UPDATE_PRIVATE_KEY"
-          echo "$SELF_UPDATE_GH_TOKEN"
+          echo "${{ SELF_UPDATE_PRIVATE_KEY }}"
+          echo "${{ SELF_UPDATE_GH_TOKEN }}"
+          echo "${{ github.ref }}"
+          echo "${{ secrets.SELF_UPDATE_GH_TOKEN }}"
 
       - name: Create a Release
         env:
