@@ -17,8 +17,8 @@ jobs:
     environment: production
 
     env:
+      SELF_UPDATE_GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SELF_UPDATE_PRIVATE_KEY: ${{ secrets.SELF_UPDATE_PRIVATE_KEY }}
-      SELF_UPDATE_GH_TOKEN: ${{ secrets.SELF_UPDATE_GH_TOKEN }}
       SELF_UPDATE_PUBLIC_KEY: ${{ secrets.SELF_UPDATE_PUBLIC_KEY }}
 
     steps:
