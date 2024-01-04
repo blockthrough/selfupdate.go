@@ -4,8 +4,6 @@ import (
 	"context"
 	"os"
 	"os/exec"
-
-	"selfupdate.blockthrough.com/pkg/executil"
 )
 
 // NewCliRunner rerun the an executable with the same arguments.
@@ -22,20 +20,5 @@ func NewCliRunner(path string, args ...string) Runner {
 		}
 
 		return cmd.Wait()
-	})
-}
-
-func NewAutoCliRunner(ext string) Runner {
-	return RunnerFunc(func(ctx context.Context) error {
-		target, err := executil.Copy(ext)
-		if err != nil {
-			return err
-		}
-
-		if target == "" {
-			return nil
-		}
-
-		return NewCliRunner(target, os.Args[1:]...).Run(ctx)
 	})
 }
