@@ -32,9 +32,9 @@ func Auto(ctx context.Context, owner string, repo string, currentVersion string,
 	// running the patcher executable, so we simply
 	if actualFilename != filename {
 		// this is a good chance to copy the downloaded file to the original file
-		err = copyFile(filepath.Join(currentExecPath, filepath.Dir(currentExecPath), filename+actualFileExt), currentExecPath)
+		err = copyFile(filepath.Join(filepath.Dir(currentExecPath), filename+actualFileExt), currentExecPath)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, fmt.Sprintf("failed to copy the downloaded file over original onex: %s", err.Error()))
+			fmt.Fprintln(os.Stderr, fmt.Sprintf("failed to copy the downloaded file over original one: %s", err.Error()))
 		}
 		return
 	} else {
