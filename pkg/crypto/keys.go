@@ -76,6 +76,10 @@ func ParsePublicKey(key string) (pub PublicKey, err error) {
 	return
 }
 
+// It seems like string2Binary is just a wrapper around hex.DecodeString.
+// Same with binary2String and hex.EncodeToString.
+// Do we actually need these functions?
+// Or can we just use hex.DecodeString and hex.EncodeToString directly?
 func string2Binary(str string) ([]byte, error) {
 	bytes, err := hex.DecodeString(str)
 	if err != nil {
