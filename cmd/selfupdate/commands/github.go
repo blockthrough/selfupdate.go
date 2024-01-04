@@ -14,7 +14,7 @@ import (
 func githubCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "github",
-		Usage: "github provider for selfupdate",
+		Usage: "a provider tool for working with github api for releasing, uploading and downloading binaries",
 		Subcommands: []*cli.Command{
 			githubCheckCmd(),
 			githubReleaseCmd(),
@@ -31,8 +31,6 @@ func githubCheckCmd() *cli.Command {
 		filename string
 		version  string
 	)
-
-	var sign bool
 
 	return &cli.Command{
 		Name:  "check",
@@ -61,11 +59,6 @@ func githubCheckCmd() *cli.Command {
 				Usage:       "version of the binary",
 				Required:    true,
 				Destination: &version,
-			},
-			&cli.BoolFlag{
-				Name:        "sign",
-				Usage:       "sign the binary before uploading",
-				Destination: &sign,
 			},
 		},
 		Action: func(ctx *cli.Context) error {
@@ -98,7 +91,7 @@ func githubReleaseCmd() *cli.Command {
 
 	return &cli.Command{
 		Name:  "release",
-		Usage: "create a new release",
+		Usage: "create a new github release",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "owner",
@@ -169,7 +162,7 @@ func githubUploadCmd() *cli.Command {
 
 	return &cli.Command{
 		Name:  "upload",
-		Usage: "upload a new asset to a already defined release",
+		Usage: "upload a new asset to an already created github release",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "owner",
@@ -239,7 +232,7 @@ func githubDownloadCmd() *cli.Command {
 
 	return &cli.Command{
 		Name:  "download",
-		Usage: "download a new version",
+		Usage: "download a file from github release's asset",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:        "owner",
@@ -254,8 +247,8 @@ func githubDownloadCmd() *cli.Command {
 				Destination: &repo,
 			},
 			&cli.StringFlag{
-				Name:        "name",
-				Usage:       "name of the binary",
+				Name:        "filename",
+				Usage:       "name of the binary content",
 				Required:    true,
 				Destination: &filename,
 			},

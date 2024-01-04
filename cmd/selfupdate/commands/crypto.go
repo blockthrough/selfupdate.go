@@ -14,7 +14,7 @@ import (
 func cryptoCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "crypto",
-		Usage: "geenerate values",
+		Usage: "work with public/private keys for signing and verifying",
 		Subcommands: []*cli.Command{
 			cryptoGenerateKeys(),
 			cryptoSign(),
@@ -26,7 +26,7 @@ func cryptoCmd() *cli.Command {
 func cryptoGenerateKeys() *cli.Command {
 	return &cli.Command{
 		Name:  "keys",
-		Usage: "genereating crypto keys pair for signing and verifying",
+		Usage: "genereating a pair of public/private keys for signing and verifying",
 		Action: func(ctx *cli.Context) error {
 			publicKey, privateKey, err := crypto.GenerateKeys()
 			if err != nil {
