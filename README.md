@@ -2,10 +2,23 @@
 
 It's a dead-simple toolchain for updating Golang binaries. It is designed to leverage Github's Releases and Actions. It comes with its CLI and SDK to make things even simpler.
 
+## Pre Installation
+
+since this project still private and has not been open-sourced, the following steps must be done first
+
+- edit `~/.gitconfig` file and append the following content at the end of it:
+
+```bash
+[url "ssh://git@github.com/"]
+        insteadOf = https://github.com/
+```
+
+- use `GOPRIVATE=selfupdate.blockthrough.com` environment variable either before each `go` command or adding it to your `~/.zshrc`.
+
 ## CLI Installation
 
 ```bash
-go install selfupdate.blockthough.com@latest
+GOPRIVATE=selfupdate.blockthrough.com go install selfupdate.blockthough.com/cmd/selfupdate@latest
 ```
 
 ## CLI Usage
@@ -103,7 +116,13 @@ In order to have successful self-updating binaries, two steps need to be followe
 - Create a new Release using `selfupdate github release` command
 - Sign and upload content using `selfupdate github upload`
 
-### ( 2 ) Using `selfupdate.go` SDK inside the binary
+### ( 2 ) Using `selfudpate` SDK inside the binary
+
+inside the go project install the SKD by running the following command:
+
+```bash
+GOPRIVATE=selfupdate.blockthrough.com go get selfupdate.blockthrough.com@latest
+```
 
 `selfupdate.go` SDK is very comprehensive, but the majority of the use cases can only call the single function at the beginning of the program.
 
