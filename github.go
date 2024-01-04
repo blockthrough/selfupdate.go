@@ -104,7 +104,7 @@ func (g *Github) Download(ctx context.Context, name string, version string) io.R
 
 	var release *github.RepositoryRelease
 
-	for i, _ := range releases {
+	for i := range releases {
 		if releases[i].GetTagName() == version {
 			release = releases[i]
 			break
@@ -157,6 +157,18 @@ func (g *Github) GetReleaseIDByVersion(ctx context.Context, version string) (int
 	}
 
 	return 0, ErrGithubReleaseNotFound
+}
+
+func (g *Github) CheckIfReleaseExists(ctx context.Context, version string) (bool, error) {
+	releaseID, err := g.GetReleaseIDByVersion(ctx, version)
+	if releaseID != 0 && err == nil {
+		return true, nil
+	}
+
+	if !errors.Is(err, ErrGithubReleaseNotFound) {
+		return false, err
+	}
+	return false, nil
 }
 
 func NewGithub(token, repoOwner, repoName string) *Github {
