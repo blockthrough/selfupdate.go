@@ -41,20 +41,18 @@ selfupdate crypto keys
 
 #### sign
 
-sign a binary using a private key. The private key must be set using the environment variable `SELF_UPDATE_PRIVATE_KEY`
+sign a binary using a private key. The private key must be passed as an argument using `--key`
 
 ```bash
-export SELF_UPDATE_PRIVATE_KEY=....
-selfupdate crypto sign < ./bin/file > ./bin/file.sig
+selfupdate crypto sign --key "CONTENT OF PRIVATE KEY" < ./bin/file > ./bin/file.sig
 ```
 
 #### verify
 
-verify a binary using a public key. The public key must be set using the environment variable `SELF_UPDATE_PUBLIC_KEY`
+verify a binary using a public key. The public key must be passed as an argument using `--key`
 
 ```bash
-export SELF_UPDATE_PUBLIC_KEY=....
-selfupdate crypto verify < ./bin/file.sg > ./bin/file
+selfupdate crypto verify --key "CONTENT OF PUBLIC KEY"  < ./bin/file.sg > ./bin/file
 ```
 
 ### github
@@ -80,21 +78,19 @@ To provide a better developer experience, this command can create a new github r
 > NOTE: running this command with the same version will be noop. So it can be safely used in github actions workflow with matrix strategy.
 
 ```bash
-selfupdate github release -owner blockthough --repo selfupdate.go --version v0.0.1 --title version v0.0.1 --desc "this is an amazin release"
+selfupdate github release -owner blockthough --repo selfupdate.go --token GITHUB_TOKEN --version v0.0.1 --title version v0.0.1 --desc "this is an amazin release"
 ```
 
 > for more info, run `selfupdate github release --help`
 
 #### upload
 
-upload a new asset to an already created github release. It is a requirement to set an environment variable, `SELF_UPDATE_PRIVATE_KEY`, while using `--sign` flag.
-
-the `--sign` flag will sign the uploaded content which later can be verified using `SELF_UPDATE_PUBLIC_KEY` environment variable.
+upload a new asset to an already created github release. If required to sign the binary file prior to upload, provide `--key` with the content of the generated private key.
 
 > In order to upload assets, a github release must be created first. Please refer to `release` subcommand. Also this command can be used multiple times for each individual asset in github actions workflow.
 
 ```bash
-selfupdate github upload -owner blockthough --repo selfupdate.go --version v0.0.1 --filename selfupload.sign --sign < /path/to/file
+selfupdate github upload -owner blockthough --repo selfupdate.go --token GITHUB_TOKEN --version v0.0.1 --filename selfupload.sign --key PRIVATE_KEY < /path/to/file
 ```
 
 #### download
@@ -102,7 +98,7 @@ selfupdate github upload -owner blockthough --repo selfupdate.go --version v0.0.
 In order to download a specific asset from a gethub release, this command can be used. It requires `--filename` and `--version` to be presented.
 
 ```bash
-selfupdate github download -owner blockthough --repo selfupdate.go --version v0.0.1 --filename selfupload.sign --verify > /path/to/file
+selfupdate github download -owner blockthough --repo selfupdate.go --version v0.0.1 --filename selfupload.sign --key PUBLIC_KEY > /path/to/file
 ```
 
 ## Usage
@@ -111,7 +107,7 @@ In order to have successful self-updating binaries, two steps need to be followe
 
 ### ( 1 ) Github Actions Workflow
 
-- First compile the your code and generate a binary, make sure to use `-ldflags "-X main.Version=${{ github.ref_name }}"` flag during `go build` to inject the new tag as a version into the binary.
+- First compile the your code and generate a binary, make sure to use `-ldflags "-X main.Version=${{ github.ref_name }} -X main.PublicKey=${{ PUBLIC_KEY }}"` flag during `go build` to inject the new tag as a version into the binary.
 
 - Create a new Release using `selfupdate github release` command
 - Sign and upload content using `selfupdate github upload`
@@ -137,24 +133,39 @@ import (
 
 
 const (
-    Version = "development"
+    Version = ""
+    PublicKey = ""
 )
 
 func main() {
+    // NOTE: please refer to "Create a Fine-Grained Personal Access Tokens" section of doc
+    ghToken, ok := os.LookupEnv("MY_AWESOME_PROJECT_GITHUB_TOKEN")
+    if !ok {
+        // error out that github token is not presented
+    }
+
     selfupdate.Auto(
 		context.Background(), // Context
 		"blockthrough",       // Owner Name
 		"selfupdate.go",      // Repo Name
 		Version,              // Current Version
-		"selfupdate",         // Executable Name
+		"selfupdate",         // Executable Name,
+		ghToken,              // Github Token
+		PublicKey,            // Public Key
     )
 
     // rest of the program
 }
 ```
 
-`selfupdate.Auto` function automatically checks, downloads, patches and reruns the previously issued commands.
+`selfupdate.Auto` function automatically checks, downloads, patches and re-runs the previously issued command.
 
 # Example
 
 `selfupdate` cli is using itself for self-updating. Please refer to both `cmd/selfupdate/main.go` and `.github/workflows/build.yml` files for more info.
+
+# Create a Fine-Grained Personal Access Tokens
+
+Each person who needs to use your app cli and leverage the selfupdating, is required to create a github api token. It is recommended to use the following [Token/Settings](https://github.com/settings/tokens?type=beta) to generate the API keys.
+
+The only required option is to select the project and on `Repository Permissions` select only `Contents` as `Read` access. We only need to read the metadata and download assets during the update, nothing more.
