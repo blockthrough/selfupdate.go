@@ -9,11 +9,10 @@ import (
 	"runtime"
 
 	"selfupdate.blockthrough.com/pkg/crypto"
-	"selfupdate.blockthrough.com/pkg/env"
 	"selfupdate.blockthrough.com/pkg/executil"
 )
 
-func Auto(ctx context.Context, owner string, repo string, currentVersion string, filename string) {
+func Auto(ctx context.Context, owner string, repo string, currentVersion string, filename string, ghToken string, publicKey string) {
 	if currentVersion == "" {
 		return
 	}
@@ -44,19 +43,7 @@ func Auto(ctx context.Context, owner string, repo string, currentVersion string,
 		os.Remove(newFilename)
 	}
 
-	ghToken, ok := env.Lookup("SELF_UPDATE_GH_TOKEN")
-	if !ok {
-		fmt.Fprintln(os.Stderr, "SELF_UPDATE_GH_TOKEN env variable is not set")
-		return
-	}
-
-	publicKeyEnv, ok := env.Lookup("SELF_UPDATE_PUBLIC_KEY")
-	if !ok {
-		fmt.Fprintln(os.Stderr, "SELF_UPDATE_PUBLIC_KEY env variable is not set")
-		return
-	}
-
-	publicKey, err := crypto.ParsePublicKey(publicKeyEnv)
+	key, err := crypto.ParsePublicKey(publicKey)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, fmt.Sprintf("failed to parse public key: %s", err.Error()))
 		return
@@ -79,7 +66,7 @@ func Auto(ctx context.Context, owner string, repo string, currentVersion string,
 	rc := ghClient.Download(ctx, signedFilename, newVersion)
 	defer rc.Close()
 
-	err = NewPatcher(newFilename).Patch(context.Background(), NewHashVerifier(publicKey).Verify(ctx, rc))
+	err = NewPatcher(newFilename).Patch(context.Background(), NewHashVerifier(key).Verify(ctx, rc))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, fmt.Sprintf("failed to patch: %s\n", err.Error()))
 		return

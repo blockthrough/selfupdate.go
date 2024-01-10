@@ -19,7 +19,9 @@ import (
 // selfupdate github release --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --sign < ./bin/btctl
 // selfupdate github download --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --verify > ./bin/btctl
 
-var Version string = ""
+var Version string = "v0.0.0"
+var PublicKey string = ""
+var GithubToken string = ""
 
 func main() {
 	selfupdate.Auto(
@@ -27,7 +29,9 @@ func main() {
 		"blockthrough",       // Owner Name
 		"selfupdate.go",      // Repo Name
 		Version,              // Current Version
-		"selfupdate",         // Executable Name
+		"selfupdate",         // Executable Name,
+		GithubToken,          // Github Token
+		PublicKey,            // Public Key
 	)
 
 	err := commands.Execute(Version)
