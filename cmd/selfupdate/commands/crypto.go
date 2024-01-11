@@ -8,7 +8,6 @@ import (
 	"selfupdate.blockthrough.com"
 	"selfupdate.blockthrough.com/pkg/cli"
 	"selfupdate.blockthrough.com/pkg/crypto"
-	"selfupdate.blockthrough.com/pkg/env"
 )
 
 func cryptoCmd() *cli.Command {
@@ -48,11 +47,19 @@ func cryptoGenerateKeys() *cli.Command {
 
 func cryptoSign() *cli.Command {
 	return &cli.Command{
-		Name:        "sign",
-		Usage:       "sign a binary using private key",
-		Description: `make sure to set SELF_UPDATE_PRIVATE_KEY env variable before using this command`,
+		Name:  "sign",
+		Usage: "sign a binary using private key",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "key",
+				Usage:    "content of the private key",
+				Required: true,
+			},
+		},
 		Action: func(ctx *cli.Context) error {
-			privateKey, err := getPrivateKey()
+			key := ctx.String("key")
+
+			privateKey, err := crypto.ParsePrivateKey(key)
 			if err != nil {
 				return err
 			}
@@ -70,11 +77,19 @@ func cryptoSign() *cli.Command {
 
 func cryptoVerify() *cli.Command {
 	return &cli.Command{
-		Name:        "verify",
-		Usage:       "verify a binary using public key",
-		Description: `make sure to set SELF_UPDATE_PUBLIC_KEY env variable before using this command`,
+		Name:  "verify",
+		Usage: "verify a binary using public key",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "key",
+				Usage:    "content of the public key",
+				Required: true,
+			},
+		},
 		Action: func(ctx *cli.Context) error {
-			publicKey, err := getPublicKey()
+			key := ctx.String("key")
+
+			publicKey, err := crypto.ParsePublicKey(key)
 			if err != nil {
 				return err
 			}
@@ -88,28 +103,6 @@ func cryptoVerify() *cli.Command {
 			return nil
 		},
 	}
-}
-
-func getPublicKey() (publicKey crypto.PublicKey, err error) {
-	value, ok := env.Lookup("SELF_UPDATE_PUBLIC_KEY")
-	if !ok {
-		err = cli.Exit("SELF_UPDATE_PUBLIC_KEY env variable is not set", 1)
-		return
-	}
-
-	publicKey, err = crypto.ParsePublicKey(value)
-	return
-}
-
-func getPrivateKey() (privateKey crypto.PrivateKey, err error) {
-	value, ok := env.Lookup("SELF_UPDATE_PRIVATE_KEY")
-	if !ok {
-		err = cli.Exit("SELF_UPDATE_PRIVATE_KEY env variable is not set", 1)
-		return
-	}
-
-	privateKey, err = crypto.ParsePrivateKey(value)
-	return
 }
 
 func createAndWrite(filename string, data []byte) error {

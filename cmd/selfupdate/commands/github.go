@@ -7,13 +7,40 @@ import (
 
 	"selfupdate.blockthrough.com"
 	"selfupdate.blockthrough.com/pkg/cli"
-	"selfupdate.blockthrough.com/pkg/env"
+	"selfupdate.blockthrough.com/pkg/crypto"
 )
 
 func githubCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "github",
 		Usage: "a provider tool for working with github api for releasing, uploading and downloading binaries",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:     "owner",
+				Usage:    "owner of the repository",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "repo",
+				Usage:    "name of the repository",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "filename",
+				Usage:    "filename of the binary",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "version",
+				Usage:    "version of the binary",
+				Required: true,
+			},
+			&cli.StringFlag{
+				Name:     "token",
+				Usage:    "github repo token, usually provided by github action as GITHUB_TOKEN env",
+				Required: true,
+			},
+		},
 		Subcommands: []*cli.Command{
 			githubCheckCmd(),
 			githubReleaseCmd(),
@@ -24,44 +51,17 @@ func githubCmd() *cli.Command {
 }
 
 func githubCheckCmd() *cli.Command {
-	var (
-		owner    string
-		repo     string
-		filename string
-		version  string
-	)
-
 	return &cli.Command{
 		Name:  "check",
 		Usage: "check if there is a new version",
-		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:        "owner",
-				Usage:       "owner of the repository",
-				Required:    true,
-				Destination: &owner,
-			},
-			&cli.StringFlag{
-				Name:        "repo",
-				Usage:       "name of the repository",
-				Required:    true,
-				Destination: &repo,
-			},
-			&cli.StringFlag{
-				Name:        "filename",
-				Usage:       "name of the binary file",
-				Required:    true,
-				Destination: &filename,
-			},
-			&cli.StringFlag{
-				Name:        "version",
-				Usage:       "version of the binary",
-				Required:    true,
-				Destination: &version,
-			},
-		},
 		Action: func(ctx *cli.Context) error {
-			ghClient, err := getGithubClient(owner, repo)
+			owner := ctx.String("owner")
+			repo := ctx.String("repo")
+			filename := ctx.String("filename")
+			version := ctx.String("version")
+			ghToken := ctx.String("token")
+
+			ghClient, err := getGithubClient(owner, repo, ghToken)
 			if err != nil {
 				return err
 			}
@@ -80,51 +80,32 @@ func githubCheckCmd() *cli.Command {
 }
 
 func githubReleaseCmd() *cli.Command {
-	var (
-		owner   string
-		repo    string
-		version string
-		title   string
-		desc    string
-	)
 
 	return &cli.Command{
 		Name:  "release",
 		Usage: "create a new github release",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:        "owner",
-				Usage:       "owner of the repository",
-				Required:    true,
-				Destination: &owner,
+				Name:     "title",
+				Usage:    "title of the release",
+				Required: true,
 			},
 			&cli.StringFlag{
-				Name:        "repo",
-				Usage:       "name of the repository",
-				Required:    true,
-				Destination: &repo,
-			},
-			&cli.StringFlag{
-				Name:        "version",
-				Usage:       "version of the binary",
-				Required:    true,
-				Destination: &version,
-			},
-			&cli.StringFlag{
-				Name:        "title",
-				Usage:       "title of the release",
-				Required:    true,
-				Destination: &title,
-			},
-			&cli.StringFlag{
-				Name:        "desc",
-				Usage:       "description of the release",
-				Required:    false,
-				Destination: &desc,
+				Name:     "desc",
+				Usage:    "description of the release",
+				Required: false,
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			ghClient, err := getGithubClient(owner, repo)
+			owner := ctx.String("owner")
+			repo := ctx.String("repo")
+			version := ctx.String("version")
+			ghToken := ctx.String("token")
+
+			title := ctx.String("title")
+			desc := ctx.String("desc")
+
+			ghClient, err := getGithubClient(owner, repo, ghToken)
 			if err != nil {
 				return err
 			}
@@ -151,58 +132,32 @@ func githubReleaseCmd() *cli.Command {
 }
 
 func githubUploadCmd() *cli.Command {
-	var (
-		owner    string
-		repo     string
-		filename string
-		version  string
-	)
-
-	var sign bool
-
 	return &cli.Command{
 		Name:  "upload",
 		Usage: "upload a new asset to an already created github release",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:        "owner",
-				Usage:       "owner of the repository",
-				Required:    true,
-				Destination: &owner,
-			},
-			&cli.StringFlag{
-				Name:        "repo",
-				Usage:       "name of the repository",
-				Required:    true,
-				Destination: &repo,
-			},
-			&cli.StringFlag{
-				Name:        "filename",
-				Usage:       "filename of the binary",
-				Required:    true,
-				Destination: &filename,
-			},
-			&cli.StringFlag{
-				Name:        "version",
-				Usage:       "version of the binary",
-				Required:    true,
-				Destination: &version,
-			},
-			&cli.BoolFlag{
-				Name:        "sign",
-				Usage:       "sign the binary before uploading",
-				Destination: &sign,
+				Name:  "key",
+				Usage: "if provided, it will be used to sign the content before uploading",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			ghClient, err := getGithubClient(owner, repo)
+			owner := ctx.String("owner")
+			repo := ctx.String("repo")
+			filename := ctx.String("filename")
+			version := ctx.String("version")
+			ghToken := ctx.String("token")
+
+			key := ctx.String("key")
+
+			ghClient, err := getGithubClient(owner, repo, ghToken)
 			if err != nil {
 				return err
 			}
 
 			var r io.Reader = os.Stdin
-			if sign {
-				privateKey, err := getPrivateKey()
+			if key != "" {
+				privateKey, err := crypto.ParsePrivateKey(key)
 				if err != nil {
 					return err
 				}
@@ -221,51 +176,25 @@ func githubUploadCmd() *cli.Command {
 }
 
 func githubDownloadCmd() *cli.Command {
-	var (
-		owner    string
-		repo     string
-		filename string
-		version  string
-	)
-
-	var verify bool
-
 	return &cli.Command{
 		Name:  "download",
 		Usage: "download a file from github release's asset",
 		Flags: []cli.Flag{
 			&cli.StringFlag{
-				Name:        "owner",
-				Usage:       "owner of the repository",
-				Required:    true,
-				Destination: &owner,
-			},
-			&cli.StringFlag{
-				Name:        "repo",
-				Usage:       "name of the repository",
-				Required:    true,
-				Destination: &repo,
-			},
-			&cli.StringFlag{
-				Name:        "filename",
-				Usage:       "name of the binary content",
-				Required:    true,
-				Destination: &filename,
-			},
-			&cli.StringFlag{
-				Name:        "version",
-				Usage:       "version of the binary",
-				Required:    true,
-				Destination: &version,
-			},
-			&cli.BoolFlag{
-				Name:        "verify",
-				Usage:       "verify the binary after downloading",
-				Destination: &verify,
+				Name:  "key",
+				Usage: "if provided it will be used to verify the content after downloading",
 			},
 		},
 		Action: func(ctx *cli.Context) error {
-			ghClient, err := getGithubClient(owner, repo)
+			owner := ctx.String("owner")
+			repo := ctx.String("repo")
+			filename := ctx.String("filename")
+			version := ctx.String("version")
+			ghToken := ctx.String("token")
+
+			key := ctx.String("key")
+
+			ghClient, err := getGithubClient(owner, repo, ghToken)
 			if err != nil {
 				return err
 			}
@@ -275,8 +204,8 @@ func githubDownloadCmd() *cli.Command {
 
 			var r io.Reader = rc
 
-			if verify {
-				publicKey, err := getPublicKey()
+			if key != "" {
+				publicKey, err := crypto.ParsePublicKey(key)
 				if err != nil {
 					return err
 				}
@@ -297,11 +226,10 @@ func githubDownloadCmd() *cli.Command {
 	}
 }
 
-func getGithubClient(owner string, repo string) (*selfupdate.Github, error) {
-	ghToken, ok := env.Lookup("SELF_UPDATE_GH_TOKEN")
-	if !ok {
-		return nil, cli.Exit("SELF_UPDATE_GH_TOKEN env variable is not set", 1)
+func getGithubClient(owner string, repo string, token string) (*selfupdate.Github, error) {
+	if token == "" {
+		return nil, cli.Exit("github token is empty", 1)
 	}
 
-	return selfupdate.NewGithub(ghToken, owner, repo), nil
+	return selfupdate.NewGithub(token, owner, repo), nil
 }

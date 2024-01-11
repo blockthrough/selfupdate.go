@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 
@@ -9,30 +10,41 @@ import (
 	"selfupdate.blockthrough.com/cmd/selfupdate/commands"
 )
 
-// SELF_UPDATE_GH_TOKEN=
-// SELF_UPDATE_PRIVATE_KEY=
-// SELF_UPDATE_PUBLIC_KEY=
-
-// selfupdate crypto generate-keys
-// selfupdate crypto sign < ./bin/btctl > ./bin/btctl.sig
-// selfupdate crypto verify < ./bin/btctl.sig > ./bin/btctl
-// selfupdate github release --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --sign < ./bin/btctl
-// selfupdate github download --owner blockthrough --repo up-marble --name btctl.sign --version v1.0.0 --verify > ./bin/btctl
-
+// During the build process, these variables are set by Github Actions
+// NOTE: if Version is empty or SELF_UPDATE_GH_TOKEN is not set, selfupdating is disabled
 var Version string = ""
+var PublicKey string = ""
 
 func main() {
-	selfupdate.Auto(
-		context.Background(), // Context
-		"blockthrough",       // Owner Name
-		"selfupdate.go",      // Repo Name
-		Version,              // Current Version
-		"selfupdate",         // Executable Name
-	)
+	runUpdate()
 
 	err := commands.Execute(Version)
 	if err != nil {
 		log.Fatal("Failed to execute: ", err)
 		os.Exit(1)
 	}
+}
+
+func runUpdate() {
+	// In order for selfupdating to work, the following conditions must be met:
+	// 1. Version must be set
+	// 2. SELF_UPDATE_GH_TOKEN must be set
+	// 3. PublicKey must be set
+	// for setting up the token please refer to
+	// "Create a Fine-Grained Personal Access Tokens" in README.md
+	ghToken, ok := os.LookupEnv("SELF_UPDATE_GH_TOKEN")
+	if !ok {
+		fmt.Fprintf(os.Stderr, "Warning: SELF_UPDATE_GH_TOKEN env is not set, selfupdating is disabled")
+		return
+	}
+
+	selfupdate.Auto(
+		context.Background(), // Context
+		"blockthrough",       // Owner Name
+		"selfupdate.go",      // Repo Name
+		Version,              // Current Version
+		"selfupdate",         // Executable Name,
+		ghToken,              // Github Token
+		PublicKey,            // Public Key
+	)
 }
