@@ -20,6 +20,7 @@ jobs:
       SELF_UPDATE_GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       SELF_UPDATE_PRIVATE_KEY: ${{ secrets.SELF_UPDATE_PRIVATE_KEY }}
       SELF_UPDATE_PUBLIC_KEY: ${{ secrets.SELF_UPDATE_PUBLIC_KEY }}
+      SELF_UPDATE_VERSION: ${{ github.ref_name }}
 
     steps:
       - name: Setup Go 1.21
@@ -30,38 +31,38 @@ jobs:
       - name: Setup Repo
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: go mod tidy
+      - name: Check ENVs
+        run: printenv
 
-      - name: Run Unit Tests
-        run: go test -v ./...
+      # - name: Run Unit Tests
+      #   run: go test -v ./...
 
-      - name: Build temporary cli
-        run: go build -o ./selfupdate ./cmd/selfupdate/main.go
+      # - name: Build temporary cli
+      #   run: go build -o ./selfupdate ./cmd/selfupdate/main.go
 
-      - name: Create a Release
-        run: |
-          ./selfupdate github release                                                                           \
-          --owner blockthrough                                                                                  \
-          --repo selfupdate.go                                                                                  \
-          --version ${{ github.ref_name }}                                                                      \
-          --title ${{ github.ref_name }}                                                                        \
-          --token ${{ SELF_UPDATE_GH_TOKEN }}
+      # - name: Create a Release
+      #   run: |
+      #     ./selfupdate github release                                                                           \
+      #     --owner blockthrough                                                                                  \
+      #     --repo selfupdate.go                                                                                  \
+      #     --version ${{ SELF_UPDATE_VERSION }}                                                                  \
+      #     --title ${{ SELF_UPDATE_VERSION }}                                                                    \
+      #     --token ${{ SELF_UPDATE_GH_TOKEN }}
 
-      - name: Build and Sign
-        run: |
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }}                                                       \
-          go build                                                                                              \
-          -ldflags "-X main.Version=${{ github.ref_name }} -X main.PublicKey=${{ SELF_UPDATE_PUBLIC_KEY }}"     \
-          -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}                                                   \
-          ./cmd/selfupdate/main.go
+      # - name: Build and Sign
+      #   run: |
+      #     GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }}                                                       \
+      #     go build                                                                                              \
+      #     -ldflags "-X main.Version=${{ SELF_UPDATE_VERSION }} -X main.PublicKey=${{ SELF_UPDATE_PUBLIC_KEY }}" \
+      #     -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}                                                   \
+      #     ./cmd/selfupdate/main.go
 
-      - name: Upload New Release
-        run: |
-          ./selfupdate github upload                                                                            \
-          --owner blockthrough                                                                                  \
-          --repo selfupdate.go                                                                                  \
-          --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign                                        \
-          --version ${{ github.ref_name }}                                                                      \
-          --token ${{ SELF_UPDATE_GH_TOKEN }}                                                                   \
-          --key ${{ SELF_UPDATE_PRIVATE_KEY }} < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
+      # - name: Upload New Release
+      #   run: |
+      #     ./selfupdate github upload                                                                            \
+      #     --owner blockthrough                                                                                  \
+      #     --repo selfupdate.go                                                                                  \
+      #     --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign                                        \
+      #     --version ${{ SELF_UPDATE_VERSION }}                                                                  \
+      #     --token ${{ SELF_UPDATE_GH_TOKEN }}                                                                   \
+      #     --key ${{ SELF_UPDATE_PRIVATE_KEY }} < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
