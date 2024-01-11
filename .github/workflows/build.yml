@@ -42,27 +42,27 @@ jobs:
 
       - name: Create a Release
         run: |
-          ./selfupdate github release                                                               \
-          --owner blockthrough                                                                      \
-          --repo selfupdate.go                                                                      \
-          --version $SELF_UPDATE_VERSION                                                            \
-          --title $SELF_UPDATE_VERSION                                                              \
-          --token $SELF_UPDATE_GH_TOKEN
+          ./selfupdate github release
+          --owner blockthrough \
+          --repo selfupdate.go \
+          --version ${{ env.SELF_UPDATE_VERSION }} \
+          --title ${{ env.SELF_UPDATE_VERSION }} \
+          --token ${{ env.SELF_UPDATE_GH_TOKEN }}
 
       - name: Build and Sign
         run: |
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }}                                           \
-          go build                                                                                  \
-          -ldflags "-X main.Version=$SELF_UPDATE_VERSION -X main.PublicKey=$SELF_UPDATE_PUBLIC_KEY" \
-          -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}                                       \
+          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} \
+          go build \
+          -ldflags "-X main.Version=${{ env.SELF_UPDATE_VERSION }} -X main.PublicKey=${{ env.SELF_UPDATE_PUBLIC_KEY }}" \
+          -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }} \
           ./cmd/selfupdate/main.go
 
       - name: Upload New Release
         run: |
-          ./selfupdate github upload                                                                \
-          --owner blockthrough                                                                      \
-          --repo selfupdate.go                                                                      \
-          --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign                            \
-          --version $SELF_UPDATE_VERSION                                                            \
-          --token $SELF_UPDATE_GH_TOKEN                                                             \
-          --key $SELF_UPDATE_PRIVATE_KEY < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
+          ./selfupdate github upload \
+          --owner blockthrough \
+          --repo selfupdate.go \
+          --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign \
+          --version ${{ env.SELF_UPDATE_VERSION }} \
+          --token ${{ env.SELF_UPDATE_GH_TOKEN }} \
+          --key ${{ env.SELF_UPDATE_PRIVATE_KEY }} < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
