@@ -42,7 +42,7 @@ jobs:
 
       - name: Create a Release
         run: |
-          ./selfupdate github release
+          ./selfupdate github release \
           --owner blockthrough \
           --repo selfupdate.go \
           --version ${{ env.SELF_UPDATE_VERSION }} \
