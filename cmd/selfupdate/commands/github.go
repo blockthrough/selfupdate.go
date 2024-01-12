@@ -10,7 +10,7 @@ import (
 	"selfupdate.blockthrough.com/pkg/crypto"
 )
 
-var githubFlags = []cli.Flag{
+var sharedGithubFlags = []cli.Flag{
 	&cli.StringFlag{
 		Name:     "owner",
 		Usage:    "owner of the repository",
@@ -37,7 +37,6 @@ func githubCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "github",
 		Usage: "a provider tool for working with github api for releasing, uploading and downloading binaries",
-		Flags: githubFlags,
 		Subcommands: []*cli.Command{
 			githubCheckCmd(),
 			githubReleaseCmd(),
@@ -59,7 +58,7 @@ func githubCheckCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "check",
 		Usage: "check if there is a new version",
-		Flags: cli.MergeFlags(githubFlags, githubCheckFlags),
+		Flags: cli.MergeFlags(sharedGithubFlags, githubCheckFlags),
 		Action: func(ctx *cli.Context) error {
 			owner := ctx.String("owner")
 			repo := ctx.String("repo")
@@ -102,7 +101,7 @@ func githubReleaseCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "release",
 		Usage: "create a new github release",
-		Flags: cli.MergeFlags(githubFlags, githubReleaseFlags),
+		Flags: cli.MergeFlags(sharedGithubFlags, githubReleaseFlags),
 		Action: func(ctx *cli.Context) error {
 			owner := ctx.String("owner")
 			repo := ctx.String("repo")
@@ -154,7 +153,7 @@ func githubUploadCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "upload",
 		Usage: "upload a new asset to an already created github release",
-		Flags: cli.MergeFlags(githubFlags, githubUploadFlags),
+		Flags: cli.MergeFlags(sharedGithubFlags, githubUploadFlags),
 		Action: func(ctx *cli.Context) error {
 			owner := ctx.String("owner")
 			repo := ctx.String("repo")
@@ -205,7 +204,7 @@ func githubDownloadCmd() *cli.Command {
 	return &cli.Command{
 		Name:  "download",
 		Usage: "download a file from github release's asset",
-		Flags: cli.MergeFlags(githubFlags, githubDownloadFlags),
+		Flags: cli.MergeFlags(sharedGithubFlags, githubDownloadFlags),
 		Action: func(ctx *cli.Context) error {
 			owner := ctx.String("owner")
 			repo := ctx.String("repo")
