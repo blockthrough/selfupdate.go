@@ -31,6 +31,13 @@ var _ Checker = (*Github)(nil)
 var _ Downloader = (*Github)(nil)
 
 func (g *Github) Upload(ctx context.Context, filename string, version string, r io.Reader) error {
+	// to overrride existing asset, we need to delete it first
+	// This is a way if we needed to rerun the github action again
+	err := g.DeleteAsset(ctx, filename, version)
+	if err != nil {
+		return err
+	}
+
 	releaseId, err := g.GetReleaseIDByVersion(ctx, version)
 	if err != nil {
 		return err
@@ -94,6 +101,44 @@ func (g *Github) Check(ctx context.Context, filename string, currentVersion stri
 	}
 
 	return releases[0].GetTagName(), releases[0].GetBody(), nil
+}
+
+func (g *Github) DeleteAsset(ctx context.Context, filename string, version string) (err error) {
+	releases, _, err := g.client.Repositories.ListReleases(ctx, g.owner, g.repo, nil)
+	if err != nil {
+		return
+	}
+
+	var targetRelease *github.RepositoryRelease
+	for _, release := range releases {
+		if release.GetTagName() == version {
+			targetRelease = release
+			break
+		}
+	}
+
+	if targetRelease == nil {
+		return nil
+	}
+
+	var existingAssetID int64
+	for _, asset := range targetRelease.Assets {
+		if asset.GetName() == filename {
+			existingAssetID = asset.GetID()
+			break
+		}
+	}
+
+	if existingAssetID == 0 {
+		return nil
+	}
+
+	_, err = g.client.Repositories.DeleteReleaseAsset(ctx, g.owner, g.repo, existingAssetID)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (g *Github) Download(ctx context.Context, name string, version string) io.ReadCloser {
