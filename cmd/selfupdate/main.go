@@ -12,8 +12,10 @@ import (
 
 // During the build process, these variables are set by Github Actions
 // NOTE: if Version is empty or SELF_UPDATE_GH_TOKEN is not set, selfupdating is disabled
-var Version string = ""
-var PublicKey string = ""
+const (
+	Version   string = ""
+	PublicKey string = ""
+)
 
 func main() {
 	runUpdate()
