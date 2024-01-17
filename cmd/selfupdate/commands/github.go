@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -119,12 +120,12 @@ func githubReleaseCmd() *cli.Command {
 			// NOTE: this check makes sure we are not creating a release that already exists
 			// which leads to error and make the cli return and error. This is usually not a
 			// problem unless the cli gets executed in github actions with strategy matrix.
-			exists, err := ghClient.CheckIfReleaseExists(ctx.Context, version)
-			if err != nil {
+			_, err = ghClient.GetReleaseIDByVersion(ctx.Context, version)
+			if err == nil {
+				// this means the release already exists, so it should be NOOP
+				return nil
+			} else if !errors.Is(err, selfupdate.ErrGithubReleaseNotFound) {
 				return err
-			}
-			if exists {
-				return fmt.Errorf("release %s already exists", version)
 			}
 
 			err = ghClient.Release(ctx.Context, version, title, desc)
