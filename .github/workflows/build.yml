@@ -5,11 +5,6 @@ on:
       - "v*"
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [darwin, linux]
-        arch: [arm64, amd64]
-
     runs-on: ubuntu-latest
 
     environment: production
@@ -47,27 +42,102 @@ jobs:
           --title ${{ env.SELF_UPDATE_VERSION }} \
           --token ${{ env.SELF_UPDATE_GH_TOKEN }}
 
-      - name: Build and Sign
+      - name: Build Darwin amd64
         run: |
-          GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} \
+          GOOS=darwin GOARCH=amd64 \
           go build \
           -ldflags "-X main.Version=${{ env.SELF_UPDATE_VERSION }} -X main.PublicKey=${{ env.SELF_UPDATE_PUBLIC_KEY }}" \
-          -o ./selfupdate-${{ matrix.os }}-${{ matrix.arch }} \
+          -o ./selfupdate-darwin-amd64 \
           ./cmd/selfupdate/main.go
 
-      - name: Upload New Release
+      - name: Build Darwin arm64
+        run: |
+          GOOS=darwin GOARCH=arm64 \
+          go build \
+          -ldflags "-X main.Version=${{ env.SELF_UPDATE_VERSION }} -X main.PublicKey=${{ env.SELF_UPDATE_PUBLIC_KEY }}" \
+          -o ./selfupdate-darwin-arm64 \
+          ./cmd/selfupdate/main.go
+
+      - name: Build Linux amd64
+        run: |
+          GOOS=linux GOARCH=amd64 \
+          go build \
+          -ldflags "-X main.Version=${{ env.SELF_UPDATE_VERSION }} -X main.PublicKey=${{ env.SELF_UPDATE_PUBLIC_KEY }}" \
+          -o ./selfupdate-linux-amd64 \
+          ./cmd/selfupdate/main.go
+
+      - name: Build Linux arm64
+        run: |
+          GOOS=linux GOARCH=arm64 \
+          go build \
+          -ldflags "-X main.Version=${{ env.SELF_UPDATE_VERSION }} -X main.PublicKey=${{ env.SELF_UPDATE_PUBLIC_KEY }}" \
+          -o ./selfupdate-linux-arm64 \
+          ./cmd/selfupdate/main.go
+
+      - name: Upload Darwin amd64
         run: |
           ./selfupdate github upload \
           --owner blockthrough \
           --repo selfupdate.go \
-          --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }}.sign \
+          --filename selfupdate-darwin-amd64.sign \
           --version ${{ env.SELF_UPDATE_VERSION }} \
           --token ${{ env.SELF_UPDATE_GH_TOKEN }} \
-          --key ${{ env.SELF_UPDATE_PRIVATE_KEY }} < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
+          --key ${{ env.SELF_UPDATE_PRIVATE_KEY }} < ./selfupdate-darwin-amd64
 
           ./selfupdate github upload \
           --owner blockthrough \
           --repo selfupdate.go \
-          --filename selfupdate-${{ matrix.os }}-${{ matrix.arch }} \
+          --filename selfupdate-darwin-amd64 \
           --version ${{ env.SELF_UPDATE_VERSION }} \
-          --token ${{ env.SELF_UPDATE_GH_TOKEN }} < ./selfupdate-${{ matrix.os }}-${{ matrix.arch }}
+          --token ${{ env.SELF_UPDATE_GH_TOKEN }} < ./selfupdate-darwin-amd64
+
+      - name: Upload Darwin arm64
+        run: |
+          ./selfupdate github upload \
+          --owner blockthrough \
+          --repo selfupdate.go \
+          --filename selfupdate-darwin-arm64.sign \
+          --version ${{ env.SELF_UPDATE_VERSION }} \
+          --token ${{ env.SELF_UPDATE_GH_TOKEN }} \
+          --key ${{ env.SELF_UPDATE_PRIVATE_KEY }} < ./selfupdate-darwin-arm64
+
+          ./selfupdate github upload \
+          --owner blockthrough \
+          --repo selfupdate.go \
+          --filename selfupdate-darwin-arm64 \
+          --version ${{ env.SELF_UPDATE_VERSION }} \
+          --token ${{ env.SELF_UPDATE_GH_TOKEN }} < ./selfupdate-darwin-arm64
+
+      - name: Upload Linux amd64
+        run: |
+          ./selfupdate github upload \
+          --owner blockthrough \
+          --repo selfupdate.go \
+          --filename selfupdate-linux-amd64.sign \
+          --version ${{ env.SELF_UPDATE_VERSION }} \
+          --token ${{ env.SELF_UPDATE_GH_TOKEN }} \
+          --key ${{ env.SELF_UPDATE_PRIVATE_KEY }} < ./selfupdate-linux-amd64
+
+          ./selfupdate github upload \
+          --owner blockthrough \
+          --repo selfupdate.go \
+          --filename selfupdate-linux-amd64 \
+          --version ${{ env.SELF_UPDATE_VERSION }} \
+          --token ${{ env.SELF_UPDATE_GH_TOKEN }} < ./selfupdate-linux-amd64
+
+      - name: Upload Linux arm64
+        run: |
+          ./selfupdate github upload \
+          --owner blockthrough \
+          --repo selfupdate.go \
+          --filename selfupdate-linux-arm64.sign \
+          --version ${{ env.SELF_UPDATE_VERSION }} \
+          --token ${{ env.SELF_UPDATE_GH_TOKEN }} \
+          --key ${{ env.SELF_UPDATE_PRIVATE_KEY }} < ./selfupdate-linux-arm64
+
+          ./selfupdate github upload \
+          --owner blockthrough \
+          --repo selfupdate.go \
+          --filename selfupdate-linux-arm64 \
+          --version ${{ env.SELF_UPDATE_VERSION }} \
+          --token ${{ env.SELF_UPDATE_GH_TOKEN }} < ./selfupdate-linux-arm64
