@@ -2,23 +2,10 @@
 
 It's a dead-simple toolchain for updating Golang binaries. It is designed to leverage Github's Releases and Actions. It comes with its CLI and SDK to make things even simpler.
 
-## Pre Installation
-
-since this project still private and has not been open-sourced, the following steps must be done first
-
-- edit `~/.gitconfig` file and append the following content at the end of it:
-
-```bash
-[url "ssh://git@github.com/"]
-        insteadOf = https://github.com/
-```
-
-- use `GOPRIVATE=selfupdate.blockthrough.com` environment variable either before each `go` command or adding it to your `~/.zshrc`.
-
 ## CLI Installation
 
 ```bash
-GOPRIVATE=selfupdate.blockthrough.com go install selfupdate.blockthough.com/cmd/selfupdate@latest
+go install selfupdate.blockthough.com/cmd/selfupdate@latest
 ```
 
 ## CLI Usage
@@ -57,7 +44,7 @@ selfupdate crypto verify --key "CONTENT OF PUBLIC KEY"  < ./bin/file.sg > ./bin/
 
 ### github
 
-a provider tool for working with github's apis for releasing, uploading and downloading binaries.
+a provider tool for working with Github's apis for releasing, uploading and downloading binaries.
 
 > NOTE: an environment variable, `SELF_UPDATE_GH_TOKEN`, needs to be created and set with `GITHUB_TOKEN`. It is highly recommened to use it `GITHUB_TOKEN` rather than personal token. Also, this command with all its sub commands needs to be called inside github's actions workflow.
 
@@ -73,7 +60,7 @@ selfupdate github check --owner blockthough --repo selfupdate.go --filename self
 
 #### release
 
-To provide a better developer experience, this command can create a new github release, with a title, and a description and attach it to a specific tag.
+To provide a better developer experience, this command can create a new Github release, with a title, and a description and attach it to a specific tag.
 
 > NOTE: running this command with the same version will be noop. So it can be safely used in github actions workflow with matrix strategy.
 
@@ -85,7 +72,7 @@ selfupdate github release -owner blockthough --repo selfupdate.go --token GITHUB
 
 #### upload
 
-upload a new asset to an already created github release. If required to sign the binary file prior to upload, provide `--key` with the content of the generated private key.
+upload a new asset to an already created Github release. If required to sign the binary file before upload, provide `--key` with the content of the generated private key.
 
 > In order to upload assets, a github release must be created first. Please refer to `release` subcommand. Also this command can be used multiple times for each individual asset in github actions workflow.
 
@@ -95,7 +82,7 @@ selfupdate github upload -owner blockthough --repo selfupdate.go --token GITHUB_
 
 #### download
 
-In order to download a specific asset from a gethub release, this command can be used. It requires `--filename` and `--version` to be presented.
+To download a specific asset from Github releases, this command can be used. It requires `--filename` and `--version` to be presented.
 
 ```bash
 selfupdate github download -owner blockthough --repo selfupdate.go --version v0.0.1 --filename selfupload.sign --key PUBLIC_KEY > /path/to/file
@@ -103,11 +90,11 @@ selfupdate github download -owner blockthough --repo selfupdate.go --version v0.
 
 ## Usage
 
-In order to have successful self-updating binaries, two steps need to be followed:
+To have successful self-updating binaries, two steps need to be followed:
 
 ### ( 1 ) Github Actions Workflow
 
-- First compile the your code and generate a binary, make sure to use `-ldflags "-X main.Version=${{ github.ref_name }} -X main.PublicKey=${{ PUBLIC_KEY }}"` flag during `go build` to inject the new tag as a version into the binary.
+First, compile your code and generate a binary, make sure to use `-ldflags "-X main.Version=${{ github.ref_name }} -X main.PublicKey=${{ PUBLIC_KEY }}"` flag during `go build` to inject the new tag as a version into the binary.
 
 - Create a new Release using `selfupdate github release` command
 - Sign and upload content using `selfupdate github upload`
@@ -117,10 +104,10 @@ In order to have successful self-updating binaries, two steps need to be followe
 inside the go project install the SKD by running the following command:
 
 ```bash
-GOPRIVATE=selfupdate.blockthrough.com go get selfupdate.blockthrough.com@latest
+go get selfupdate.blockthrough.com@latest
 ```
 
-`selfupdate.go` SDK is very comprehensive, but the majority of the use cases can only call the single function at the beginning of the program.
+`selfupdate.go` SDK is very comprehensive, but the majority of the projects can only call the single function at the beginning of the program.
 
 ```golang
 package main
@@ -162,10 +149,10 @@ func main() {
 
 # Example
 
-`selfupdate` cli is using itself for self-updating. Please refer to both `cmd/selfupdate/main.go` and `.github/workflows/build.yml` files for more info.
+`selfupdate` CLI is using itself for self-updating. Please refer to both `cmd/selfupdate/main.go` and `.github/workflows/build.yml` files for more info.
 
-# Create a Fine-Grained Personal Access Tokens
+# Create Fine-Grained Personal Access Tokens
 
-Each person who needs to use your app cli and leverage the selfupdating, is required to create a github api token. It is recommended to use the following [Token/Settings](https://github.com/settings/tokens?type=beta) to generate the API keys.
+Each person who needs to use your app CLI and leverage the self-updating is required to create a GitHub API token. It is recommended to use the following [Token/Settings](https://github.com/settings/tokens?type=beta) to generate the API keys.
 
-The only required option is to select the project and on `Repository Permissions` select only `Contents` as `Read` access. We only need to read the metadata and download assets during the update, nothing more.
+The only required option is to select the project, and on Repository Permissions, select only Contents as Read access. We only need to read the metadata and download assets during the update, nothing more.
