@@ -12,9 +12,9 @@ import (
 
 // During the build process, these variables are set by Github Actions
 // NOTE: if Version is empty or SELF_UPDATE_GH_TOKEN is not set, selfupdating is disabled
-const (
-	Version   string = ""
-	PublicKey string = ""
+var (
+	Version   = ""
+	PublicKey = ""
 )
 
 func main() {
@@ -36,7 +36,7 @@ func runUpdate() {
 	// "Create a Fine-Grained Personal Access Tokens" in README.md
 	ghToken, ok := os.LookupEnv("SELF_UPDATE_GH_TOKEN")
 	if !ok {
-		fmt.Fprintf(os.Stderr, "Warning: SELF_UPDATE_GH_TOKEN env is not set, selfupdating is disabled")
+		fmt.Fprintf(os.Stderr, "Warning: SELF_UPDATE_GH_TOKEN env is not set, selfupdating is disabled\n")
 		return
 	}
 
