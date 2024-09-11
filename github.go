@@ -13,6 +13,7 @@ import (
 	"golang.org/x/oauth2"
 
 	"selfupdate.blockthrough.com/pkg/compress"
+	"selfupdate.blockthrough.com/pkg/version"
 )
 
 var (
@@ -21,9 +22,10 @@ var (
 )
 
 type Github struct {
-	owner  string
-	repo   string
-	client *github.Client
+	owner            string
+	repo             string
+	client           *github.Client
+	versionCompareFn func(a, b string) bool
 }
 
 var _ Uploader = (*Github)(nil)
@@ -80,7 +82,7 @@ func (g *Github) Check(ctx context.Context, filename string, currentVersion stri
 	}
 
 	sort.Slice(releases, func(i, j int) bool {
-		return releases[i].GetTagName() > releases[j].GetTagName()
+		return g.versionCompareFn(releases[i].GetTagName(), releases[j].GetTagName())
 	})
 
 	if len(releases) == 0 || releases[0].GetTagName() == currentVersion {
@@ -204,8 +206,16 @@ func (g *Github) GetReleaseIDByVersion(ctx context.Context, version string) (int
 	return 0, ErrGithubReleaseNotFound
 }
 
-func NewGithub(token, repoOwner, repoName string) *Github {
-	return &Github{
+type githubOptFn func(g *Github)
+
+func WithGithubVersionCompare(fn func(a, b string) bool) githubOptFn {
+	return func(g *Github) {
+		g.versionCompareFn = fn
+	}
+}
+
+func NewGithub(token, repoOwner, repoName string, optFns ...githubOptFn) *Github {
+	g := &Github{
 		owner: repoOwner,
 		repo:  repoName,
 		client: github.NewClient(
@@ -216,5 +226,12 @@ func NewGithub(token, repoOwner, repoName string) *Github {
 				}),
 			),
 		),
+		versionCompareFn: version.Compare,
 	}
+
+	for _, optFn := range optFns {
+		optFn(g)
+	}
+
+	return g
 }
