@@ -17,6 +17,7 @@ import (
 )
 
 var (
+	ErrGithubAssetNotFound   = errors.New("github asset not found")
 	ErrGithubReleaseNotFound = errors.New("github release not found")
 	ErrGithubRedirect        = errors.New("github redirect")
 )
@@ -99,7 +100,7 @@ func (g *Github) Check(ctx context.Context, filename string, currentVersion stri
 	}
 
 	if githubAsset == nil {
-		return "", "", ErrGithubReleaseNotFound
+		return "", "", ErrGithubAssetNotFound
 	}
 
 	return releases[0].GetTagName(), releases[0].GetBody(), nil
