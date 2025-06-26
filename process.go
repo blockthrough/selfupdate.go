@@ -61,7 +61,7 @@ func Auto(ctx context.Context, owner string, repo string, currentVersion string,
 		return
 	}
 
-	fmt.Fprintf(os.Stdout, "downloading new version (%s)...", newVersion)
+	fmt.Fprintf(os.Stderr, "downloading new version (%s)...", newVersion)
 
 	rc := ghClient.Download(ctx, signedFilename, newVersion)
 	defer rc.Close()
@@ -72,9 +72,9 @@ func Auto(ctx context.Context, owner string, repo string, currentVersion string,
 		return
 	}
 
-	fmt.Fprint(os.Stdout, "done\n")
+	fmt.Fprint(os.Stderr, "done\n")
 
-	fmt.Fprintln(os.Stdout, "running new version...")
+	fmt.Fprintln(os.Stderr, "running new version...")
 
 	err = NewCliRunner(newFilename, os.Args[1:]...).Run(ctx)
 	if err != nil {
