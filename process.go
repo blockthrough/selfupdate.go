@@ -57,7 +57,7 @@ func Auto(ctx context.Context, owner string, repo string, currentVersion string,
 	if errors.Is(err, ErrNoNewVersion) {
 		return
 	} else if err != nil {
-		fmt.Fprintln(os.Stderr, err.Error())
+		fmt.Fprintln(os.Stderr, fmt.Sprintf("failed to check for new version: %s", err.Error()))
 		return
 	}
 
